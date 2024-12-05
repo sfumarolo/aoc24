@@ -15,9 +15,32 @@ function addRule(rules, rule) {
     rules[ruleParts[1]].comesAfter.push(ruleParts[0]);
 }
 
-function part1(input) {
-    // Implement part 1 logic here
-    console.log("Running Part 1");
+function evalLine(rules, pages) {
+    var lineValid = true;
+    for (var pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+        page = pages[pageIndex];
+        //console.log(page);
+        if(rules[page]) {
+            //console.log("Rules exist for " + page);
+            for (var compPage = 0; compPage < pageIndex && lineValid; compPage++) {
+                //console.log("Comparing " + page + " to " + pages[compPage]);
+                //console.log(rules[pages[pageIndex]].comesBefore);
+                if(rules[pages[pageIndex]].comesBefore.includes(pages[compPage])) {
+                    //console.log(page + " is in the wrong place");
+                    lineValid = false;
+                    break;
+                } else {
+                   //console.log(page + " is in the right place");
+                }
+            }
+        } else {
+            "There are no rules governing where " + page + " should go";
+        }
+    }
+    return lineValid;
+}
+
+function theGuts(input, careAboutValid) {
     const lines = input.split('\n');
     var rules = {};
     var foundTheEnd = false;
@@ -33,37 +56,31 @@ function part1(input) {
         } else {
             console.log("==============");
             console.log(line);
-            var lineValid = true;
             const pages = line.split(',');
-            for (var pageIndex = 0; pageIndex < pages.length; pageIndex++) {
-                page = pages[pageIndex];
-                //console.log(page);
-                if(rules[page]) {
-                    //console.log("Rules exist for " + page);
-                    for (var compPage = 0; compPage < pageIndex && lineValid; compPage++) {
-                        //console.log("Comparing " + page + " to " + pages[compPage]);
-                        //console.log(rules[pages[pageIndex]].comesBefore);
-                        if(rules[pages[pageIndex]].comesBefore.includes(pages[compPage])) {
-                            //console.log(page + " is in the wrong place");
-                            lineValid = false;
-                            break;
-                        } else {
-                           //console.log(page + " is in the right place");
-                        }
-                    }
-                } else {
-                    "There are no rules governing where " + page + " should go";
-                }
-            }
+            const lineValid = evalLine(rules, pages);
 
-            if (lineValid) {
+            if (lineValid && careAboutValid) {
                 console.log(line + " is valid");
 
                 console.log("Adding " + pages[Math.floor(pages.length / 2)]);
                 //console.log("Adding " + pages[Math.round(pageIndex / 2).valueOf()]);
                 runningSum += parseInt(pages[Math.floor(pages.length / 2)]);
-            } else {
+            } else if (!careAboutValid && !lineValid) {
                 console.log(line + " is invalid");
+                var newPages = pages.slice();
+                newPages.sort((a, b) => {
+                    if (rules[a].comesBefore.includes(b)) {
+                        return -1;
+                    } else if (rules[b].comesBefore.includes(a)) {
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                });
+                console.log(newPages.join(","));
+
+                console.log("Adding " + newPages[Math.floor(newPages.length / 2)]);
+                runningSum += parseInt(newPages[Math.floor(newPages.length / 2)]);
             }
         }
     });
@@ -71,10 +88,16 @@ function part1(input) {
     console.log(runningSum);
 }
 
+function part1(input) {
+    // Implement part 1 logic here
+    console.log("Running Part 1");
+    theGuts(input, true);
+}
+
 function part2(input) {
     // Implement part 2 logic here
     console.log("Running Part 2");
-    console.log(input);
+    theGuts(input, false);
 }
 
 function getInput(file) {
