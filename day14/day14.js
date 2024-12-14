@@ -74,6 +74,22 @@ function moveRobots(steps, gridHeight, gridWidth) {
     });
 }
 
+function getStandardDeviation (array) {
+    const n = array.length
+    const mean = array.reduce((a, b) => a + b) / n
+    return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
+  }
+
+function getDeviationScore() {
+    let rowCords = robots.map(robot => robot['pos'][0]);
+    let colCords = robots.map(robot => robot['pos'][1]);
+
+    let rowDeviation = getStandardDeviation(rowCords);
+    let colDeviation = getStandardDeviation(colCords);
+
+    return rowDeviation * colDeviation;
+}
+
 function part1(input) {
     // Implement part 1 logic here
     console.log("Running Part 1");
@@ -90,7 +106,22 @@ function part1(input) {
 function part2(input) {
     // Implement part 2 logic here
     console.log("Running Part 2");
-    console.log(input);
+    parseInput(input);
+
+    [gridHeight, gridWidth] = robots.length > 20 ? [103, 101] : [7, 11];
+    drawGrid(gridHeight, gridWidth);
+    console.log("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+    let stdDevScore = Number.MAX_SAFE_INTEGER
+    for (let i = 1; i < 100000; i++) {
+        moveRobots(1, gridHeight, gridWidth);
+        let newScore = getDeviationScore(gridHeight, gridWidth);
+        if (newScore < stdDevScore) {
+            drawGrid(gridHeight, gridWidth);
+            console.log(`New lowest score: ${newScore} on iteration ${i}`);
+            stdDevScore = newScore;
+        }
+    }
+    moveRobots(100, gridHeight, gridWidth);
 }
 
 function getInput(file) {
